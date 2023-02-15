@@ -1,0 +1,16 @@
+{
+  "name": "troll-challenge-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "solution.js",
+  "scripts": {
+    "start": "open src/challenge.html",
+    "build": "tsc --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "typescript": "^4.4.3"
+  }
+}
