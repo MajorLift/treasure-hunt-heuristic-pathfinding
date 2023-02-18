@@ -1,9 +1,11 @@
 # Setup
 * If you don't have it already, install `npm` on your machine [link](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 * `npm install`
-    * (This installs Typescript package dependency)
+    * (This installs package dependencies)
+* `npm run dev`
+    * (This runs webpack in watch mode which auto recompiles and bundles whenever you save)
 * `npm run build`
-    * (This runs compiler in watch mode which auto recompiles whenever you save)
+    * (This runs webpack to transpile and bundle TypeScript files into the dist folder)
 * `npm run start`
     * (This opens browser with the challenge that runs your compiled code)
 

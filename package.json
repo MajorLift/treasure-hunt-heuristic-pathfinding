@@ -4,9 +4,8 @@
   "description": "",
   "scripts": {
     "start": "open dist/index.html",
-    "dev": "concurrently \"webpack --watch\" \"open dist/index.html\"",
     "build": "webpack",
-    "compile": "tsc --watch"
+    "dev": "concurrently \"webpack --watch\" \"npm run start\""
   },
   "keywords": [],
   "author": "",
