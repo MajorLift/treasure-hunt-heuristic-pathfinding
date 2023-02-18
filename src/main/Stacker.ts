@@ -1,115 +1,92 @@
 import '../minitroll.png'
 
-import { MinPriorityQueue } from '@datastructures-js/priority-queue'
-
+import { BacktrackingStrategy } from './BacktrackingStrategy'
 import { Coordinate, Coordinates, SerializedCoordinate } from './Coordinates'
-import { Grid, GridMap } from './Grid'
+import { Grid } from './Grid'
 import {
-    Cell, CellType, CurrentCell, DEFAULT_GOAL_LEVEL, DIRECTIONS, Instruction, InstructionReverse,
-    Move, NEIGHBORS
+    Cell, CellType, CurrentCell, DEFAULT_GOAL_LEVEL, DIRECTIONS, Instruction, Move, NEIGHBORS,
+    ReverseInstruction
 } from './types'
 
 export class Stacker {
-    private grid: Grid
-    private position: Coordinate
-    private cell?: CurrentCell
-    private isLoaded: boolean
-    private isGoalFound: boolean
-    private routeStack: Move[]
-    private visited: Set<SerializedCoordinate>
-    private cellMoves: Map<SerializedCoordinate, Move[]>
+    private _grid: Grid = new Grid()
+    private _position: Coordinate = [0, 0]
+    private _cell?: CurrentCell
+    private _isLoaded: boolean = false
+    private _isGoalFound: boolean = false
+    private _pathStack: Move[] = []
+    private _strategy?: BacktrackingStrategy | null
 
-    constructor() {
-        this.position = [0, 0]
-        this.grid = new Grid()
-        this.isLoaded = false
-        this.isGoalFound = false
-        this.routeStack = []
-        this.visited = new Set()
-        this.cellMoves = new Map()
+    constructor() {}
+
+    get position() {
+        return this._position
+    }
+    set position(coordinate: Coordinate) {
+        this._position = coordinate
+    }
+
+    get cell() {
+        return this._cell
+    }
+
+    get grid() {
+        return this._grid
     }
 
     public turn = (currentCell: CurrentCell): Instruction => {
-        console.log(this.grid.gridMap)
-        this.cell = currentCell
-        if (this.isGoalFound) return this.undoMove()
-        return this.backtrackStrategy()
-    }
-
-    public backtrackStrategy() {
-        const serializedCurrentPosition = Coordinates.serialize(this.position)
-        if (!this.cellMoves.has(serializedCurrentPosition)) {
-            this.cellMoves.set(serializedCurrentPosition, this.getMoves())
+        this._cell = currentCell
+        if (!!this._strategy) {
+            this._strategy = new BacktrackingStrategy(this)
         }
-        if (this.cellMoves.get(serializedCurrentPosition)?.length) {
-            const [coordinate, instruction] = this.cellMoves.get(serializedCurrentPosition)!.pop()!
-            this.visited.add(Coordinates.serialize(coordinate))
-            this.routeStack.push([this.position, instruction])
-            this.position = coordinate
-            return instruction
+        if (this._isGoalFound) {
+            this._pathStack.splice(0, this._pathStack.length - 1)
+            this._strategy = null
+            return this.revert()
         }
-        return this.undoMove()
+        return this._strategy?.generateMove() ?? Instruction.UNLOAD
     }
 
-    private undoMove() {
-        if (!this.routeStack.length) return Instruction.UNLOAD
-        const [prevCoordinate, instruction] = this.routeStack.pop()!
-        this.position = prevCoordinate!
-        if (this.isGoalFound) this.routeStack.splice(0, this.routeStack.length)
-        return InstructionReverse[instruction!]
+    public findBlockAndRetrieve() {
+        const block = this._grid.closestBlocks?.dequeue()
     }
 
-    private getMoves = (): Move[] => {
-        const validMoves: Move[] = []
-        for (const neighbor of NEIGHBORS) {
-            const { type, level } = this.cell?.[neighbor] ?? {}
-            const neighborCoordinate = this.getNeighborCoordinate(DIRECTIONS[neighbor])
-            this.updateGrid({ type: type ?? CellType.WALL, level: level ?? 0 }, neighborCoordinate)
-            if (this.visited.has(Coordinates.serialize(neighborCoordinate))) continue
-            switch (type) {
-                case CellType.EMPTY:
-                    validMoves.push([neighborCoordinate, neighbor])
-                    break
-                case CellType.BLOCK:
-                    if (level !== undefined && this.isNeighborAccessible(level)) {
-                        validMoves.push([neighborCoordinate, neighbor])
-                    }
-                    break
-                case CellType.WALL:
-                    break
-                case CellType.GOLD:
-                    this.grid.goal = neighborCoordinate
-                    this.grid.goalLevel = level ?? DEFAULT_GOAL_LEVEL
-                    this.isGoalFound = true
-                    break
-                default:
-                    throw new Error('unknown or invalid cell type')
-            }
-        }
-        return validMoves
+    public revert() {
+        if (!this._pathStack.length) return Instruction.UNLOAD
+        const { coordinate: prevCoordinate, instruction } = this._pathStack.pop()!
+        this._position = prevCoordinate!
+        return ReverseInstruction[instruction!]
     }
 
-    private getNeighborCoordinate(offset: typeof DIRECTIONS[keyof typeof DIRECTIONS]): Coordinate {
-        return [0, 0].map((_, i) => this.position[i] + offset[i]) as Coordinate
-    }
-
-    private isNeighborAccessible(neighbor: Cell): boolean
-    private isNeighborAccessible(neighborLevel: number): boolean
-    private isNeighborAccessible(arg: Cell | number) {
+    public isNeighborAccessible(neighbor: Cell): boolean
+    public isNeighborAccessible(neighborLevel: number): boolean
+    public isNeighborAccessible(arg: Cell | number) {
         let neighborLevel = 0
         if (typeof arg === 'number') neighborLevel = arg
         else {
             if (arg.type === CellType.WALL) return false
             neighborLevel = arg.level
         }
-        return Math.abs(this.cell?.level ?? 0 - neighborLevel) <= 1
+        return Math.abs(this._cell?.level ?? 0 - neighborLevel) <= 1
     }
 
-    private updateGrid(cell: Cell, coordinate: Coordinate) {
-        this.grid.gridMap.set(Coordinates.serialize(coordinate), cell)
-        // if (this.isGoalFound) this.grid.blocksByDist.enqueue(coordinate)
+    public updateGrid(cell: Cell, coordinate: Coordinate) {
+        this._grid.addToMap(cell, coordinate)
+    }
+
+    public pushToPathStack(move: Move) {
+        this._pathStack.push(move)
+    }
+
+    public setGoalFound() {
+        if (this._isGoalFound) throw new Error('Goal cell has already been found.')
+        this._isGoalFound = true
+    }
+
+    public static reversePath(path: Instruction[]) {
+        return path.map((e) => ReverseInstruction[e]).reverse()
     }
 }
 
 // @ts-ignore
-globalThis.Stacker = Stacker
+globalthis._Stacker = Stacker // gives `challenge.js` access to `Stacker` class

@@ -1,30 +1,40 @@
-import { Coordinate, SerializedCoordinate } from './Coordinates'
+import { MinPriorityQueue } from '@datastructures-js/priority-queue'
+
+import { Coordinate, Coordinates, SerializedCoordinate } from './Coordinates'
+import { Staircase } from './Staircase'
 import { Cell, CellType } from './types'
 
 export type GridMap = Map<SerializedCoordinate, Cell>
 
-export interface IGrid {
-    origin: Coordinate
+export class Grid {
+    gridMap: GridMap
     goal?: Coordinate
     goalLevel?: number
-    gridMap: GridMap
-    // blocksByDist: MinPriorityQueue<Coordinate>
-    addToMap: (cell: Cell, coordinate: Coordinate) => void
-    changeOfBasis: (newOrigin: Coordinate) => void
-}
-
-export class Grid {
-    origin: Coordinate // start cell or bottom stair
-    goal?: Coordinate // top stair
-    goalLevel?: number
-    gridMap: GridMap
-    // blocksByDist: MinPriorityQueue<Coordinate>
+    staircase?: Staircase
+    closestBlocks?: MinPriorityQueue<Coordinate>
 
     constructor() {
-        this.origin = [0, 0]
         this.gridMap = new Map().set([0, 0], { type: CellType.EMPTY, level: 0 })
-        // this.blocksByDist = new MinPriorityQueue<Coordinate>((target: Coordinate) => Grid.manhattanDist(this.origin, target))
     }
 
-    changeOfBasis(newOrigin: Coordinate): void {}
+    public addToMap(cell: Cell, coordinate: Coordinate) {
+        this.gridMap.set(Coordinates.serialize(coordinate), cell)
+    }
+
+    public onGoalFound(topStair: Coordinate, goal: Coordinate, goalLevel: number) {
+        this.goal = goal
+        this.goalLevel = goalLevel
+        this.staircase = new Staircase(this.goalLevel, topStair)
+        this.populateClosestBlocks()
+    }
+
+    private populateClosestBlocks() {
+        this.closestBlocks = new MinPriorityQueue<Coordinate>((target: Coordinate) =>
+            Coordinates.manhattanDistance(this.staircase?.bottom ?? [0, 0], target)
+        )
+        for (const [coordinateString, cell] of this.gridMap) {
+            if (cell.type === CellType.BLOCK) this.closestBlocks.enqueue(Coordinates.deserialize(coordinateString))
+        }
+        // console.log(this.closestBlocks)
+    }
 }

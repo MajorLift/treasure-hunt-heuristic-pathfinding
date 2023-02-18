@@ -1,4 +1,4 @@
-import { Coordinate } from './Coordinates'
+import { Coordinate, SerializedCoordinate } from './Coordinates'
 
 export enum Instruction {
     LEFT = 'left',
@@ -9,7 +9,7 @@ export enum Instruction {
     UNLOAD = 'drop',
 }
 
-export const InstructionReverse = {
+export const ReverseInstruction = {
     [Instruction.LEFT]: Instruction.RIGHT,
     [Instruction.RIGHT]: Instruction.LEFT,
     [Instruction.UP]: Instruction.DOWN,
@@ -48,4 +48,7 @@ export interface CurrentCell extends Cell {
     down: Cell
 }
 
-export type Move = [Coordinate, Instruction]
+export type Move = {
+    coordinate: Coordinate
+    instruction: Instruction
+}
