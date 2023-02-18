@@ -1,23 +1,24 @@
 import '../minitroll.png'
 
+import { AStarStrategy } from './AStarStrategy'
 import { BacktrackingStrategy } from './BacktrackingStrategy'
-import { Coordinate, Coordinates, SerializedCoordinate } from './Coordinates'
 import { Grid } from './Grid'
+import { IStacker } from './interfaces'
 import {
-    Cell, CellType, CurrentCell, DEFAULT_GOAL_LEVEL, DIRECTIONS, Instruction, Move, NEIGHBORS,
-    ReverseInstruction
+    Cell, CellType, CurrentCell, GameState, Instruction, ReverseInstruction, StrategyType, Trace
 } from './types'
+import { Coordinate } from './utils/Coordinates'
 
-export class Stacker {
-    private _grid: Grid = new Grid()
+export class Stacker implements IStacker {
+    private readonly _grid: Grid = new Grid()
     private _position: Coordinate = [0, 0]
     private _cell?: CurrentCell
     private _isLoaded: boolean = false
     private _isGoalFound: boolean = false
-    private _pathStack: Move[] = []
-    private _strategy?: BacktrackingStrategy | null
-
-    constructor() {}
+    private _isStaircaseFoundationBuilt: boolean = false
+    private _isGoalTraversed: boolean = false
+    private readonly _pathStack: Trace[] = []
+    private _strategy?: StrategyType | null
 
     get position() {
         return this._position
@@ -34,33 +35,46 @@ export class Stacker {
         return this._grid
     }
 
-    public turn = (currentCell: CurrentCell): Instruction => {
+    get pathStack() {
+        return this._pathStack
+    }
+
+    get isGoalFound() {
+        return this._isGoalFound
+    }
+
+    public progressGameState(newState: GameState) {}
+
+    public turn(currentCell: CurrentCell) {
         this._cell = currentCell
-        if (!!this._strategy) {
-            this._strategy = new BacktrackingStrategy(this)
+        if (!this._strategy) {
+            if (!this._isGoalFound) this._strategy = new BacktrackingStrategy(this)
+            else if (!this._isStaircaseFoundationBuilt) this._strategy = new AStarStrategy(this)
+            else {
+            }
         }
         if (this._isGoalFound) {
             this._pathStack.splice(0, this._pathStack.length - 1)
             this._strategy = null
             return this.revert()
         }
-        return this._strategy?.generateMove() ?? Instruction.UNLOAD
+        return this._strategy?.next() ?? this.doNothing()
     }
 
-    public findBlockAndRetrieve() {
-        const block = this._grid.closestBlocks?.dequeue()
+    public doNothing() {
+        return this._isLoaded ? Instruction.LOAD : Instruction.UNLOAD
     }
 
     public revert() {
-        if (!this._pathStack.length) return Instruction.UNLOAD
-        const { coordinate: prevCoordinate, instruction } = this._pathStack.pop()!
-        this._position = prevCoordinate!
-        return ReverseInstruction[instruction!]
+        if (!this._pathStack.length) return this.doNothing()
+        const { predecessor, instruction } = this._pathStack.pop()!
+        this._position = predecessor
+        return ReverseInstruction[instruction]
     }
 
-    public isNeighborAccessible(neighbor: Cell): boolean
-    public isNeighborAccessible(neighborLevel: number): boolean
-    public isNeighborAccessible(arg: Cell | number) {
+    public isTraversable(neighbor: Cell): boolean
+    public isTraversable(neighborLevel: number): boolean
+    public isTraversable(arg: Cell | number) {
         let neighborLevel = 0
         if (typeof arg === 'number') neighborLevel = arg
         else {
@@ -68,14 +82,6 @@ export class Stacker {
             neighborLevel = arg.level
         }
         return Math.abs(this._cell?.level ?? 0 - neighborLevel) <= 1
-    }
-
-    public updateGrid(cell: Cell, coordinate: Coordinate) {
-        this._grid.addToMap(cell, coordinate)
-    }
-
-    public pushToPathStack(move: Move) {
-        this._pathStack.push(move)
     }
 
     public setGoalFound() {
@@ -89,4 +95,4 @@ export class Stacker {
 }
 
 // @ts-ignore
-globalthis._Stacker = Stacker // gives `challenge.js` access to `Stacker` class
+globalThis.Stacker = Stacker

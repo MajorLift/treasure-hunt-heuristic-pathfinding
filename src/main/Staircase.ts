@@ -1,5 +1,5 @@
-import { Coordinate } from './Coordinates'
 import { Instruction, Move } from './types'
+import { Coordinate } from './utils/Coordinates'
 
 export class Staircase {
     height: number
@@ -18,7 +18,7 @@ export class Staircase {
     }
 
     public updateBottom(move: Move) {
-        const { coordinate: bottom, instruction } = move
+        const { successor: bottom, instruction } = move
         this.bottom = bottom
         this.descendingPath.push(instruction)
         this.bottomUpdateCount++
