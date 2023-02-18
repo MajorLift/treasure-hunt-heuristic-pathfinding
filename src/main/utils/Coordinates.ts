@@ -1,4 +1,4 @@
-import { DIRECTIONS } from './types'
+import { DIRECTIONS } from '../types'
 
 export type Coordinate = [x: number, y: number]
 export type SerializedCoordinate = `${number},${number}`

@@ -1,4 +1,15 @@
-import { Coordinate, SerializedCoordinate } from './Coordinates'
+import { AStarStrategy } from '../AStarStrategy'
+import { BacktrackingStrategy } from '../BacktrackingStrategy'
+import { Coordinate, SerializedCoordinate } from '../utils/Coordinates'
+
+export enum GameState {
+    FIND_GOAL,
+    BUILD_FOUNDATION,
+    BUILD_STAIRCASE,
+    END,
+}
+
+export type StrategyType = BacktrackingStrategy | AStarStrategy
 
 export enum Instruction {
     LEFT = 'left',
@@ -48,7 +59,12 @@ export interface CurrentCell extends Cell {
     down: Cell
 }
 
+export type Trace = {
+    predecessor: Coordinate
+    instruction: Instruction
+}
+
 export type Move = {
-    coordinate: Coordinate
+    successor: Coordinate
     instruction: Instruction
 }
