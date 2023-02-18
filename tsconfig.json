@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
+    "noEmit": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "sourceMap": true,
+    "module": "CommonJS",
     "target": "ESNext",
     "jsx": "react",
     "allowJs": true,
