@@ -42,9 +42,7 @@ export class Stacker {
             this.cellMoves.set(serializedCurrentPosition, this.getMoves())
         }
         if (this.cellMoves.get(serializedCurrentPosition)?.length) {
-            const [coordinate, instruction] = this.cellMoves
-                .get(serializedCurrentPosition)!
-                .pop()!
+            const [coordinate, instruction] = this.cellMoves.get(serializedCurrentPosition)!.pop()!
             this.visited.add(Coordinates.serialize(coordinate))
             this.routeStack.push([this.position, instruction])
             this.position = coordinate
@@ -65,24 +63,15 @@ export class Stacker {
         const validMoves: Move[] = []
         for (const neighbor of NEIGHBORS) {
             const { type, level } = this.cell?.[neighbor] ?? {}
-            const neighborCoordinate = this.getNeighborCoordinate(
-                DIRECTIONS[neighbor]
-            )
-            this.updateGrid(
-                { type: type ?? CellType.WALL, level: level ?? 0 },
-                neighborCoordinate
-            )
-            if (this.visited.has(Coordinates.serialize(neighborCoordinate)))
-                continue
+            const neighborCoordinate = this.getNeighborCoordinate(DIRECTIONS[neighbor])
+            this.updateGrid({ type: type ?? CellType.WALL, level: level ?? 0 }, neighborCoordinate)
+            if (this.visited.has(Coordinates.serialize(neighborCoordinate))) continue
             switch (type) {
                 case CellType.EMPTY:
                     validMoves.push([neighborCoordinate, neighbor])
                     break
                 case CellType.BLOCK:
-                    if (
-                        level !== undefined &&
-                        this.isNeighborAccessible(level)
-                    ) {
+                    if (level !== undefined && this.isNeighborAccessible(level)) {
                         validMoves.push([neighborCoordinate, neighbor])
                     }
                     break
@@ -100,9 +89,7 @@ export class Stacker {
         return validMoves
     }
 
-    private getNeighborCoordinate(
-        offset: typeof DIRECTIONS[keyof typeof DIRECTIONS]
-    ): Coordinate {
+    private getNeighborCoordinate(offset: typeof DIRECTIONS[keyof typeof DIRECTIONS]): Coordinate {
         return [0, 0].map((_, i) => this.position[i] + offset[i]) as Coordinate
     }
 

@@ -18,12 +18,7 @@ export const InstructionReverse = {
     [Instruction.UNLOAD]: Instruction.LOAD,
 } as const
 
-export const NEIGHBORS = [
-    Instruction.LEFT,
-    Instruction.UP,
-    Instruction.RIGHT,
-    Instruction.DOWN,
-] as const
+export const NEIGHBORS = [Instruction.LEFT, Instruction.UP, Instruction.RIGHT, Instruction.DOWN] as const
 
 export const DIRECTIONS = {
     [Instruction.LEFT]: [0, -1],
