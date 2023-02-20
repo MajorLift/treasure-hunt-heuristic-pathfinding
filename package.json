@@ -4,8 +4,9 @@
   "description": "",
   "scripts": {
     "start": "open dist/index.html",
+    "dev": "npm run start && npm run watch",
     "build": "webpack",
-    "dev": "concurrently \"webpack --watch\" \"npm run start\""
+    "watch": "webpack --watch"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +17,6 @@
     "@types/node": "^18.14.0",
     "@typescript-eslint/eslint-plugin": "5.52.0",
     "@typescript-eslint/parser": "5.52.0",
-    "concurrently": "^7.6.0",
     "eslint": "8.34.0",
     "eslint-config-prettier": "8.6.0",
     "eslint-plugin-import": "2.27.5",
