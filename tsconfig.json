@@ -13,7 +13,7 @@
     "lib": [
       "ESNext",
       "dom"
-    ],
+    ]
   },
   "exclude": [
     "spec",
@@ -21,6 +21,6 @@
     "node_modules"
   ],
   "include": [
-    "src/**/*"
-  ],
+    "src/main/**/*"
+  ]
 }

@@ -6,7 +6,11 @@
     "start": "open dist/index.html",
     "dev": "npm run start && npm run watch",
     "build": "webpack",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "pre-commit": "npm run compile; npm run lint; npm run format",
+    "compile": "tsc",
+    "lint": "npx eslint --fix \"src/main/**/*.ts\"",
+    "format": "npx prettier --write src/main"
   },
   "keywords": [],
   "author": "",
