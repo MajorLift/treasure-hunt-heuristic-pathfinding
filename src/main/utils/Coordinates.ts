@@ -1,14 +1,15 @@
-import { DIRECTIONS } from '../types'
-
-export type Coordinate = [x: number, y: number]
-export type SerializedCoordinate = `${number},${number}`
+import { Coordinate, DIRECTIONS, SerializedCoordinate } from '../types'
 
 export class Coordinates {
-    public static serialize = (coordinate: Coordinate) => {
+    public static isEqual(a: Coordinate, b: Coordinate) {
+        return a[0] === b[0] && a[1] === b[1]
+    }
+
+    public static serialize(coordinate: Coordinate) {
         return coordinate.join(',') as SerializedCoordinate
     }
 
-    public static deserialize = (arg: SerializedCoordinate) => {
+    public static deserialize(arg: SerializedCoordinate) {
         return arg.split(',').map((e) => Number(e)) as Coordinate
     }
 
@@ -18,8 +19,8 @@ export class Coordinates {
 
     public static getCoordinateByOffset(
         source: Coordinate,
-        offset: typeof DIRECTIONS[keyof typeof DIRECTIONS] | Coordinate
-    ): Coordinate {
+        offset: (typeof DIRECTIONS)[keyof typeof DIRECTIONS] | Coordinate
+    ) {
         return [0, 0].map((_, i) => source[i] + offset[i]) as Coordinate
     }
 }

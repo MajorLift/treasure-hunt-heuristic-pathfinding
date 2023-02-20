@@ -1,13 +1,12 @@
-import { Cell, CurrentCell, GameState, Instruction } from '../types'
+import { CurrentCell, GameState, Instruction } from '../types'
 
-export interface IStrategy {
+export interface IPathfindingStrategy {
     next(): Instruction
+    retrace(): Instruction
 }
 
 export interface IStacker {
     turn: (arg: CurrentCell) => Instruction
-    progressGameState: (arg: GameState) => void
+    progressGameState: (arg?: GameState) => void
     doNothing: () => Instruction.LOAD | Instruction.UNLOAD
-    revert: () => Instruction
-    isTraversible: (arg: Cell | number) => boolean
 }

@@ -1,7 +1,3 @@
-import { AStarStrategy } from '../AStarStrategy'
-import { BacktrackingStrategy } from '../BacktrackingStrategy'
-import { Coordinate, SerializedCoordinate } from '../utils/Coordinates'
-
 export enum GameState {
     FIND_GOAL,
     BUILD_FOUNDATION,
@@ -9,7 +5,9 @@ export enum GameState {
     END,
 }
 
-export type StrategyType = BacktrackingStrategy | AStarStrategy
+export type Coordinate = [row: number, col: number]
+
+export type SerializedCoordinate = `${number},${number}`
 
 export enum Instruction {
     LEFT = 'left',

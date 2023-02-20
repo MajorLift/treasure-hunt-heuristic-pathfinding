@@ -1,26 +1,32 @@
-import { Instruction, Move } from './types'
-import { Coordinate } from './utils/Coordinates'
+import { Coordinate, Instruction, Move } from './types'
 
 export class Staircase {
-    height: number
-    top: Coordinate
-    bottom: Coordinate
-    bottomUpdateCount: number = 0
-    ascendingPath: Instruction[]
-    descendingPath: Instruction[]
+    public readonly goal: Coordinate
+    public readonly height: number
+    public readonly top: Coordinate
+    private _bottom: Coordinate
+    private _bottomUpdateCount = 0
+    public readonly ascendingPath: Instruction[] = []
+    public readonly descendingPath: Instruction[] = []
 
-    constructor(height: number, top: Coordinate, bottom?: Coordinate) {
-        this.height = height
-        this.top = top
-        this.bottom = bottom ?? top
-        this.ascendingPath = []
-        this.descendingPath = []
+    get bottom() {
+        return this._bottom
+    }
+    get bottomUpdateCount() {
+        return this._bottomUpdateCount
     }
 
-    public updateBottom(move: Move) {
+    constructor(goal: Coordinate, height: number, top: Coordinate, bottom?: Coordinate) {
+        this.goal = goal
+        this.height = height
+        this.top = top
+        this._bottom = bottom ?? top
+    }
+
+    public updateBottom(move: Move): void {
         const { successor: bottom, instruction } = move
-        this.bottom = bottom
+        this._bottom = bottom
         this.descendingPath.push(instruction)
-        this.bottomUpdateCount++
+        this._bottomUpdateCount++
     }
 }
