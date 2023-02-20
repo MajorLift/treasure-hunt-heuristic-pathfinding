@@ -7,6 +7,7 @@ import { Coordinates } from './utils'
 export class Grid {
   public readonly gridMap = new Map<SerializedCoordinate, Cell>()
   private _closestBlocks?: MinPriorityQueue<Coordinate>
+  private _isGoalFound = false
   private _goal?: Coordinate
   private _goalLevel = DEFAULT_GOAL_LEVEL
   private _staircase?: Staircase
@@ -20,6 +21,9 @@ export class Grid {
 
   get closestBlocks() {
     return this._closestBlocks
+  }
+  get isGoalFound() {
+    return this._isGoalFound
   }
   get goal() {
     return this._goal
@@ -40,9 +44,10 @@ export class Grid {
   }
 
   public onGoalFound(goal: Coordinate, goalLevel: number, topStair: Coordinate) {
+    this._isGoalFound = true
     this._goal = goal
     this._goalLevel = goalLevel
-    this._staircase = new Staircase(goal, goalLevel, topStair)
+    this._staircase = new Staircase(topStair)
     this._closestBlocks = new MinPriorityQueue<Coordinate>((target: Coordinate) =>
       Coordinates.manhattanDistance(goal, target)
     )

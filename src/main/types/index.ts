@@ -1,6 +1,6 @@
 export enum GameState {
   FIND_GOAL,
-  BUILD_FOUNDATION,
+  RETRIEVE_BLOCK,
   BUILD_STAIRCASE,
   END,
 }
@@ -65,4 +65,9 @@ export type Trace = {
 export type Move = {
   successor: Coordinate
   instruction: Instruction
+}
+
+export enum StairbuilderMode {
+  EXTEND,
+  ADD_LEVEL,
 }

@@ -1,7 +1,8 @@
 {
-  "editor.tabSize": 2,
-  "[typescript]": {
-    "editor.tabSize": 2
-  },
-  "importSorter.sortConfiguration.removeUnusedImports": true
+    "editor.tabSize": 2,
+    "[typescript]": {
+        "editor.tabSize": 2
+    },
+    "importSorter.sortConfiguration.removeUnusedImports": true,
+    "importSorter.importStringConfiguration.tabSize": 2,
 }

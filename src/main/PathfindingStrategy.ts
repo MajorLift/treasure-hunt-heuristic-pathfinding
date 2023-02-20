@@ -1,15 +1,7 @@
 import { Grid } from './Grid'
 import { Stacker } from './Stacker'
 import {
-  Cell,
-  CellType,
-  DIRECTIONS,
-  GameState,
-  Move,
-  NEIGHBORS,
-  ReverseInstruction,
-  SerializedCoordinate,
-  Trace,
+  CellType, DIRECTIONS, GameState, Move, NEIGHBORS, ReverseInstruction, SerializedCoordinate, Trace
 } from './types'
 import { Coordinates } from './utils'
 
@@ -25,15 +17,18 @@ export abstract class PathfindingStrategy {
   }
 
   /**
-   * Updates Strategy.visited, Strategy.pathStack, Grid.closestBlocks
-   * @returns void
+   * Scans four-directional neighbor nodes and updates `Grid.gridMap` `Grid.closestBlocks`.
+   *
+   * Initializes `Grid.isGoalFound`, `Grid.goal`, `Grid.goalLevel`, `Grid.closestBlocks`, `Staircase`.
+   *
+   * @returns Collection of `Moves` to traversable successor nodes.
    */
-  protected exploreNeighbors() {
+  protected expand() {
     const validMoves: Move[] = []
     for (const neighbor of NEIGHBORS) {
       const { type, level } = this._stacker.cell?.[neighbor] ?? {
         type: CellType.WALL,
-        level: 0,
+        level: +Infinity,
       }
       const neighborCoordinate = Coordinates.getCoordinateByOffset(this._stacker.position, DIRECTIONS[neighbor])
       this._grid.addToMap(neighborCoordinate, { type, level })
@@ -46,17 +41,13 @@ export abstract class PathfindingStrategy {
           })
           break
         case CellType.BLOCK:
-          if (level !== undefined && this.isTraversable(level)) {
+          if (level <= 1) {
             validMoves.push({
               successor: neighborCoordinate,
               instruction: neighbor,
             })
             if (this._stacker.gameState > GameState.FIND_GOAL) {
-              // TODO: implement staircase building logic -> block cells become empty once visited
-              // TODO: -> restore logic for updating closest blocks
-              // if (!this._visited.has(Coordinates.serialize(neighborCoordinate))) {
-              //     this._grid.updateClosestBlocks(neighborCoordinate)
-              // }
+              this._grid.updateClosestBlocks(neighborCoordinate)
             }
           }
           break
@@ -65,31 +56,34 @@ export abstract class PathfindingStrategy {
         case CellType.GOLD:
           if (this._stacker.gameState === GameState.FIND_GOAL) {
             this._grid.onGoalFound(neighborCoordinate, level, this._stacker.position)
-            this._stacker.progressGameState()
           }
           break
         default:
-          throw new Error('unknown or invalid cell type')
+          throw new Error('Unknown or invalid cell type')
       }
     }
     return validMoves
   }
 
-  protected isTraversable(neighbor: Cell): boolean
-  protected isTraversable(neighborLevel: number): boolean
-  protected isTraversable(arg: Cell | number) {
-    let neighborLevel = 0
-    if (typeof arg === 'number') neighborLevel = arg
-    else {
-      if (arg.type === CellType.WALL) return false
-      neighborLevel = arg.level
-    }
-    return Math.abs(this._stacker.cell?.level ?? 0 - neighborLevel) <= 1
-  }
+  // protected isTraversable(neighbor: Cell): boolean
+  // protected isTraversable(neighborLevel: number): boolean
+  // protected isTraversable(arg: Cell | number) {
+  //   let neighborLevel = 0
+  //   if (typeof arg === 'number') neighborLevel = arg
+  //   else {
+  //     if (arg.type === CellType.WALL) return false
+  //     neighborLevel = arg.level
+  //   }
+  //   return Math.abs(this._stacker.cell?.level ?? 0 - neighborLevel) <= 1
+  // }
 
-  public retrace() {
-    if (!this._pathStack.length) return this._stacker.doNothing()
-    const { predecessor, instruction } = this._pathStack.pop()!
+  protected prev() {
+    const trace = this._pathStack.pop()
+    if (!trace) {
+      console.log('Path stack depleted.')
+      return this._stacker.doNothing()
+    }
+    const { predecessor, instruction } = trace
     this._stacker.position = predecessor
     return ReverseInstruction[instruction]
   }
