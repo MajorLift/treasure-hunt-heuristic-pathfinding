@@ -1,10 +1,10 @@
 import { MinPriorityQueue } from '@datastructures-js/priority-queue'
 
-import { IPathfindingStrategy } from './interfaces'
+import { IPathfindingStrategy } from '../interfaces'
+import { Stacker } from '../models'
+import { Coordinate, GameState, Move, SerializedCoordinate } from '../types'
+import { Coordinates } from '../utils'
 import { PathfindingStrategy } from './PathfindingStrategy'
-import { Stacker } from './Stacker'
-import { Coordinate, GameState, Move, SerializedCoordinate } from './types'
-import { Coordinates } from './utils'
 
 export class AStarStrategy extends PathfindingStrategy implements IPathfindingStrategy {
   private _start: Coordinate
@@ -26,32 +26,36 @@ export class AStarStrategy extends PathfindingStrategy implements IPathfindingSt
   }
 
   public next() {
-    if (this._isTargetReached) {
+    if (!this._isTargetReached) {
       /**
-       * 3) Retrace steps from target back to start.
+       * 0) Start cell already has a block.
        */
-      if (!Coordinates.isEqual(this._stacker.position, this._start)) {
-        return this.prev()
+      if (Coordinates.isEqual(this._start, this._target)) {
+        this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
+        return this._stacker.unload()
       }
-      /**
-       * 4) Returned to start. Switch to stair-building strategy.
-       */
-      this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
-      return this._stacker.doNothing()
-    } else {
       /**
        * 2) Arrived at target. Load block.
        */
       if (Coordinates.isEqual(this._stacker.position, this._target)) {
-        console.log('Target block found:', this._target, 'Starting point:', this._start)
+        console.log(
+          'A* Pathfinder - ',
+          'Target block found:',
+          this._target,
+          'fScore',
+          this._fScore.get(Coordinates.serialize(this._target)),
+          'heuristic:',
+          Coordinates.manhattanDistance(this._start, this._target),
+          'Starting point:',
+          this._start
+        )
         this._isTargetReached = true
         return this._stacker.load()
         /**
          * 1) A* pathfinding from start to target.
          */
       } else {
-        const moves = this.expand()
-        for (const move of moves) {
+        for (const move of this.expand({ excludeVisited: false })) {
           const { successor } = move
           const [currentPosition, nextPosition] = [
             Coordinates.serialize(this._stacker.position),
@@ -76,11 +80,23 @@ export class AStarStrategy extends PathfindingStrategy implements IPathfindingSt
           return instruction
         }
         throw new Error(
-          `A* pathfinder failed (empty open set) - 
+          `A* failed (empty open set) - 
             start: ${Coordinates.serialize(this._start)}, 
             target: ${Coordinates.serialize(this._target)}`
         )
       }
+    } else {
+      /**
+       * 3) Retrace steps from target back to start.
+       */
+      if (!Coordinates.isEqual(this._stacker.position, this._start)) {
+        return this.prev()
+      }
+      /**
+       * 4) Returned to start. Switch to stair-building strategy.
+       */
+      this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
+      return this._stacker.doNothing()
     }
   }
 }

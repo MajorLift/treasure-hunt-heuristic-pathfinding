@@ -5,8 +5,8 @@ module.exports = {
   mode: 'development',
   devtool: 'inline-source-map',
   entry: {
-    solution: './src/main/Stacker.ts',
-    challenge: './src/challenge.js',
+    solution: path.resolve(__dirname, './src/main/models/Stacker.ts'),
+    challenge: path.resolve(__dirname, './static/challenge.js'),
   },
   output: {
     path: path.resolve(__dirname, './dist'),
@@ -33,7 +33,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       inject: false,
-      template: path.resolve(__dirname, './src/challenge.ejs'),
+      template: path.resolve(__dirname, './static/challenge.ejs'),
     }),
   ],
 }

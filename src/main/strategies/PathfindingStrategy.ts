@@ -1,9 +1,15 @@
-import { Grid } from './Grid'
-import { Stacker } from './Stacker'
+import { Grid, Stacker } from '../models'
 import {
-  CellType, DIRECTIONS, GameState, Move, NEIGHBORS, ReverseInstruction, SerializedCoordinate, Trace
-} from './types'
-import { Coordinates } from './utils'
+  CellType,
+  DIRECTIONS,
+  GameState,
+  Move,
+  NEIGHBORS,
+  ReverseInstruction,
+  SerializedCoordinate,
+  Trace,
+} from '../types'
+import { Coordinates } from '../utils'
 
 export abstract class PathfindingStrategy {
   protected readonly _stacker: Stacker
@@ -23,7 +29,7 @@ export abstract class PathfindingStrategy {
    *
    * @returns Collection of `Moves` to traversable successor nodes.
    */
-  protected expand() {
+  protected expand({ excludeVisited, updateBlocks }: { excludeVisited?: boolean; updateBlocks?: boolean }) {
     const validMoves: Move[] = []
     for (const neighbor of NEIGHBORS) {
       const { type, level } = this._stacker.cell?.[neighbor] ?? {
@@ -32,7 +38,9 @@ export abstract class PathfindingStrategy {
       }
       const neighborCoordinate = Coordinates.getCoordinateByOffset(this._stacker.position, DIRECTIONS[neighbor])
       this._grid.addToMap(neighborCoordinate, { type, level })
-      if (this._visited.has(Coordinates.serialize(neighborCoordinate))) continue
+      if (excludeVisited !== false) {
+        if (this._visited.has(Coordinates.serialize(neighborCoordinate))) continue
+      }
       switch (type) {
         case CellType.EMPTY:
           validMoves.push({
@@ -46,7 +54,7 @@ export abstract class PathfindingStrategy {
               successor: neighborCoordinate,
               instruction: neighbor,
             })
-            if (this._stacker.gameState > GameState.FIND_GOAL) {
+            if (updateBlocks !== false) {
               this._grid.updateClosestBlocks(neighborCoordinate)
             }
           }
@@ -55,7 +63,7 @@ export abstract class PathfindingStrategy {
           break
         case CellType.GOLD:
           if (this._stacker.gameState === GameState.FIND_GOAL) {
-            this._grid.onGoalFound(neighborCoordinate, level, this._stacker.position)
+            this._grid.onGoalFound(neighborCoordinate, level, this._stacker)
           }
           break
         default:
@@ -65,22 +73,10 @@ export abstract class PathfindingStrategy {
     return validMoves
   }
 
-  // protected isTraversable(neighbor: Cell): boolean
-  // protected isTraversable(neighborLevel: number): boolean
-  // protected isTraversable(arg: Cell | number) {
-  //   let neighborLevel = 0
-  //   if (typeof arg === 'number') neighborLevel = arg
-  //   else {
-  //     if (arg.type === CellType.WALL) return false
-  //     neighborLevel = arg.level
-  //   }
-  //   return Math.abs(this._stacker.cell?.level ?? 0 - neighborLevel) <= 1
-  // }
-
   protected prev() {
     const trace = this._pathStack.pop()
     if (!trace) {
-      console.log('Path stack depleted.')
+      console.log('Pathfinder - Path stack empty.')
       return this._stacker.doNothing()
     }
     const { predecessor, instruction } = trace

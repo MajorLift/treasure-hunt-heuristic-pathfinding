@@ -1,8 +1,8 @@
 import { MinPriorityQueue } from '@datastructures-js/priority-queue'
 
-import { Staircase } from './Staircase'
-import { Cell, CellType, Coordinate, DEFAULT_GOAL_LEVEL, SerializedCoordinate } from './types'
-import { Coordinates } from './utils'
+import { Cell, CellType, Coordinate, DEFAULT_GOAL_LEVEL, SerializedCoordinate } from '../types'
+import { Coordinates } from '../utils'
+import { Stacker, Staircase } from './'
 
 export class Grid {
   public readonly gridMap = new Map<SerializedCoordinate, Cell>()
@@ -43,11 +43,11 @@ export class Grid {
     this.closestBlocks?.enqueue(coordinate)
   }
 
-  public onGoalFound(goal: Coordinate, goalLevel: number, topStair: Coordinate) {
+  public onGoalFound(goal: Coordinate, goalLevel: number, stacker: Stacker) {
     this._isGoalFound = true
     this._goal = goal
     this._goalLevel = goalLevel
-    this._staircase = new Staircase(topStair)
+    this._staircase = new Staircase(stacker)
     this._closestBlocks = new MinPriorityQueue<Coordinate>((target: Coordinate) =>
       Coordinates.manhattanDistance(goal, target)
     )
@@ -56,6 +56,14 @@ export class Grid {
         this._closestBlocks.enqueue(Coordinates.deserialize(coordinateString))
       }
     }
-    console.log('goal:', this.goal, 'goal level:', this.goalLevel, 'top stair:', this._staircase.top)
+    console.log(
+      'Grid (goal found) -',
+      'goal:',
+      this.goal,
+      'goal level:',
+      this.goalLevel,
+      'top stair:',
+      this._staircase.top
+    )
   }
 }

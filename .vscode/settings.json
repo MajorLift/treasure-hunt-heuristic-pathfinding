@@ -5,4 +5,8 @@
     },
     "importSorter.sortConfiguration.removeUnusedImports": true,
     "importSorter.importStringConfiguration.tabSize": 2,
+    "importSorter.importStringConfiguration.hasSemicolon": false,
+    "importSorter.importStringConfiguration.trailingComma": "multiLine",
+    "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 120,
+    "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.type": "newLineEachExpressionAfterCountLimitExceptIfOnlyOne",
 }

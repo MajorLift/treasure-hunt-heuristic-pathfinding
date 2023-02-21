@@ -1,8 +1,8 @@
-import { IPathfindingStrategy } from './interfaces'
+import { IPathfindingStrategy } from '../interfaces'
+import { Stacker } from '../models'
+import { Instruction, Move, SerializedCoordinate } from '../types'
+import { Coordinates } from '../utils'
 import { PathfindingStrategy } from './PathfindingStrategy'
-import { Stacker } from './Stacker'
-import { Instruction, Move, SerializedCoordinate } from './types'
-import { Coordinates } from './utils'
 
 export class BacktrackingStrategy extends PathfindingStrategy implements IPathfindingStrategy {
   private _successors = new Map<SerializedCoordinate, Move[]>()
@@ -24,7 +24,7 @@ export class BacktrackingStrategy extends PathfindingStrategy implements IPathfi
      * 1) If current node is unvisited, get neighbor node info and store in successors map.
      */
     if (!this._successors.has(currentPosition)) {
-      this._successors.set(currentPosition, this.expand())
+      this._successors.set(currentPosition, this.expand({ updateBlocks: false }))
     }
     const currentSuccessors = this._successors.get(currentPosition) ?? []
     const { successor, instruction } = currentSuccessors.pop() ?? {}
