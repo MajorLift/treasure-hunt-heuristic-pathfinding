@@ -22,7 +22,7 @@ export class Staircase {
     this.stairs.add(Coordinates.serialize(this.top))
   }
 
-  public extend(move: Move): void {
+  public extend(move: Move) {
     const { successor, instruction } = move
     this.extendedFlag = true
     this.bottom = successor

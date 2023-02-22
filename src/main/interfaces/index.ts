@@ -9,5 +9,5 @@ export interface IStacker {
   doNothing: () => Instruction.LOAD | Instruction.UNLOAD
   load: () => Instruction.LOAD
   unload: () => Instruction.UNLOAD
-  switchGameState: (arg?: GameState) => void
+  switchGameState: (arg: GameState) => void
 }

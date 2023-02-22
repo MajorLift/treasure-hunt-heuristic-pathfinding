@@ -5,7 +5,7 @@ import { Coordinates } from '../utils'
 import { PathfindingStrategy } from './PathfindingStrategy'
 
 export class BacktrackingStrategy extends PathfindingStrategy implements IPathfindingStrategy {
-  private _successors = new Map<SerializedCoordinate, Move[]>()
+  private readonly _successors = new Map<SerializedCoordinate, Move[]>()
 
   constructor(stacker: Stacker) {
     super(stacker)

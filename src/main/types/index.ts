@@ -1,8 +1,10 @@
+import { Coordinates } from '../utils'
+
 export enum GameState {
-  FIND_GOAL,
-  RETRIEVE_BLOCK,
-  BUILD_STAIRCASE,
-  END,
+  FIND_GOAL = 'find goal',
+  RETRIEVE_BLOCK = 'retrieve block',
+  BUILD_STAIRCASE = 'build staircase',
+  END = 'end',
 }
 
 export type Coordinate = [row: number, col: number]
@@ -29,11 +31,20 @@ export const ReverseInstruction = {
 
 export const NEIGHBORS = [Instruction.LEFT, Instruction.UP, Instruction.RIGHT, Instruction.DOWN] as const
 
-export const DIRECTIONS = {
+export type DirectionInstruction = (typeof NEIGHBORS)[number]
+
+export const OFFSETS = {
   [Instruction.LEFT]: [0, -1],
   [Instruction.UP]: [-1, 0],
   [Instruction.RIGHT]: [0, +1],
   [Instruction.DOWN]: [+1, 0],
+} as const
+
+export const DIRECTIONS = {
+  [Coordinates.serialize([0, -1])]: Instruction.LEFT,
+  [Coordinates.serialize([-1, 0])]: Instruction.UP,
+  [Coordinates.serialize([0, +1])]: Instruction.RIGHT,
+  [Coordinates.serialize([+1, 0])]: Instruction.DOWN,
 } as const
 
 export const DEFAULT_GOAL_LEVEL = 8

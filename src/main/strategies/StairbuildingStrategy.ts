@@ -1,6 +1,6 @@
 import { IPathfindingStrategy } from '../interfaces'
 import { Stacker, Staircase } from '../models'
-import { GameState } from '../types'
+import { DIRECTIONS, GameState } from '../types'
 import { Coordinates } from '../utils'
 import { PathfindingStrategy } from './PathfindingStrategy'
 
@@ -17,9 +17,9 @@ export class StairbuildingStrategy extends PathfindingStrategy implements IPathf
     /**
      * Victory condition
      */
-    if (this.staircase.topLevel === this._grid.goalLevel) {
+    if (this._grid.goal !== undefined && this.staircase.topLevel === this._grid.goalLevel - 1) {
       this._stacker.switchGameState(GameState.END)
-      return this._stacker.doNothing()
+      return DIRECTIONS[Coordinates.serialize(Coordinates.offset(this._stacker.position, this._grid.goal))]
     }
     /**
      * Place and stack new bottom stair.

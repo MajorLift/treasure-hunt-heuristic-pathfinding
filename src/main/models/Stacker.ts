@@ -1,7 +1,7 @@
 import '../../../static/minitroll.png'
 
 import { IPathfindingStrategy, IStacker } from '../interfaces'
-import { AStarStrategy, BacktrackingStrategy, StairbuildingStrategy } from '../strategies'
+import { AStarStrategy, BacktrackingStrategy } from '../strategies'
 import { Coordinate, CurrentCell, GameState, Instruction } from '../types'
 import { Coordinates } from '../utils'
 import { Grid } from './'
@@ -11,7 +11,7 @@ export class Stacker implements IStacker {
   private _position: Coordinate = [0, 0]
   private _cell?: CurrentCell
   private _isLoaded = false
-  private _gameState: GameState = 0
+  private _gameState: GameState = GameState.FIND_GOAL
   private _strategy?: IPathfindingStrategy | null
   private _turnCount = 1
 
@@ -52,7 +52,7 @@ export class Stacker implements IStacker {
           this.activateStrategy(new AStarStrategy(this, nextTargetBlock))
           break
         case GameState.BUILD_STAIRCASE:
-          this.activateStrategy(new StairbuildingStrategy(this))
+          // this.activateStrategy(new StairbuildingStrategy(this))
           break
         case GameState.END:
           if (Coordinates.isEqual(this._position, this._grid.goal ?? [NaN, NaN])) {
@@ -70,7 +70,7 @@ export class Stacker implements IStacker {
 
   public load() {
     if (!this._isLoaded) {
-      console.log('Stacker - loads block:', this._position)
+      console.log('Stacker - Loads block:', this._position)
     }
     this._isLoaded = true
     return Instruction.LOAD as const
@@ -78,7 +78,7 @@ export class Stacker implements IStacker {
 
   public unload() {
     if (this._isLoaded) {
-      console.log('Stacker - unloads block:', this._position)
+      console.log('Stacker - Unloads block:', this._position)
     }
     this._isLoaded = false
     this._strategy = null
@@ -87,14 +87,13 @@ export class Stacker implements IStacker {
 
   public doNothing() {
     console.log('Stacker - Skip turn:', this._position)
-    --this._turnCount
+    this._turnCount--
     return this._isLoaded ? Instruction.LOAD : Instruction.UNLOAD
   }
 
-  public switchGameState(state?: GameState) {
-    if (state === undefined) this._gameState++
-    else this._gameState = state
+  public switchGameState(state: GameState) {
     this.deactivateStrategy()
+    this._gameState = state
     console.log('Stacker - New game state:', this.gameState)
   }
 

@@ -1,15 +1,5 @@
 import { Grid, Stacker } from '../models'
-import {
-  Cell,
-  CellType,
-  DIRECTIONS,
-  GameState,
-  Move,
-  NEIGHBORS,
-  ReverseInstruction,
-  SerializedCoordinate,
-  Trace,
-} from '../types'
+import { Cell, CellType, GameState, Move, NEIGHBORS, ReverseInstruction, SerializedCoordinate, Trace } from '../types'
 import { Coordinates } from '../utils'
 
 export abstract class PathfindingStrategy {
@@ -58,7 +48,7 @@ export abstract class PathfindingStrategy {
         type: CellType.WALL,
         level: +Infinity,
       }
-      const neighborCoordinate = Coordinates.getCoordinateByOffset(this._stacker.position, DIRECTIONS[neighbor])
+      const neighborCoordinate = Coordinates.getCoordinateFromInstruction(this._stacker.position, neighbor)
       this._grid.addToMap(neighborCoordinate, { type, level })
       if (excludeVisited !== false) {
         if (this._visited.has(Coordinates.serialize(neighborCoordinate))) continue
