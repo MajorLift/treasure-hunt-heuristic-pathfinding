@@ -66,8 +66,3 @@ export type Move = {
   successor: Coordinate
   instruction: Instruction
 }
-
-export enum StairbuilderMode {
-  EXTEND,
-  ADD_LEVEL,
-}

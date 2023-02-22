@@ -13,6 +13,7 @@ export class Stacker implements IStacker {
   private _isLoaded = false
   private _gameState: GameState = 0
   private _strategy?: IPathfindingStrategy | null
+  private _turnCount = 1
 
   get grid() {
     return this._grid
@@ -34,7 +35,7 @@ export class Stacker implements IStacker {
   }
 
   public turn(currentCell: CurrentCell) {
-    console.log('Current cell:', this._position, this._cell)
+    console.log('Turn:', this._turnCount++, this._position, this._cell, this._strategy)
     this._cell = currentCell
     if (!this._strategy) {
       let nextTargetBlock
@@ -44,6 +45,9 @@ export class Stacker implements IStacker {
           break
         case GameState.RETRIEVE_BLOCK:
           nextTargetBlock = this._grid.closestBlocks?.pop()
+          /**
+           * TODO: FIX (edge case) - If game starts at a cell neighboring the goal node, `Grid.closestBlocks` never gets populated.
+           */
           if (!nextTargetBlock) throw new Error('Out of blocks to retrieve.')
           this.activateStrategy(new AStarStrategy(this, nextTargetBlock))
           break
@@ -83,6 +87,7 @@ export class Stacker implements IStacker {
 
   public doNothing() {
     console.log('Stacker - Skip turn:', this._position)
+    --this._turnCount
     return this._isLoaded ? Instruction.LOAD : Instruction.UNLOAD
   }
 

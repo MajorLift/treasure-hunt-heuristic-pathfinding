@@ -1,5 +1,6 @@
 import { Grid, Stacker } from '../models'
 import {
+  Cell,
   CellType,
   DIRECTIONS,
   GameState,
@@ -22,6 +23,17 @@ export abstract class PathfindingStrategy {
     this._grid = this._stacker.grid
   }
 
+  protected prev() {
+    const trace = this._pathStack.pop()
+    if (!trace) {
+      console.log('Pathfinder - Path stack empty.')
+      return this._stacker.doNothing()
+    }
+    const { predecessor, instruction } = trace
+    this._stacker.position = predecessor
+    return ReverseInstruction[instruction]
+  }
+
   /**
    * Scans four-directional neighbor nodes and updates `Grid.gridMap` `Grid.closestBlocks`.
    *
@@ -29,7 +41,17 @@ export abstract class PathfindingStrategy {
    *
    * @returns Collection of `Moves` to traversable successor nodes.
    */
-  protected expand({ excludeVisited, updateBlocks }: { excludeVisited?: boolean; updateBlocks?: boolean }) {
+  protected expand({
+    excludeVisited,
+    updateBlocks,
+    maxLevel,
+    checkTraversability,
+  }: {
+    excludeVisited?: boolean
+    updateBlocks?: boolean
+    maxLevel?: number
+    checkTraversability?: boolean
+  }) {
     const validMoves: Move[] = []
     for (const neighbor of NEIGHBORS) {
       const { type, level } = this._stacker.cell?.[neighbor] ?? {
@@ -40,6 +62,10 @@ export abstract class PathfindingStrategy {
       this._grid.addToMap(neighborCoordinate, { type, level })
       if (excludeVisited !== false) {
         if (this._visited.has(Coordinates.serialize(neighborCoordinate))) continue
+      }
+      if (level > (maxLevel ?? +Infinity)) continue
+      if (checkTraversability === true) {
+        if (!this.isTraversable(level)) continue
       }
       switch (type) {
         case CellType.EMPTY:
@@ -73,14 +99,15 @@ export abstract class PathfindingStrategy {
     return validMoves
   }
 
-  protected prev() {
-    const trace = this._pathStack.pop()
-    if (!trace) {
-      console.log('Pathfinder - Path stack empty.')
-      return this._stacker.doNothing()
+  protected isTraversable(neighbor: Cell): boolean
+  protected isTraversable(neighborLevel: number): boolean
+  protected isTraversable(arg: Cell | number) {
+    let neighborLevel = 0
+    if (typeof arg === 'number') neighborLevel = arg
+    else {
+      if (arg.type === CellType.WALL) return false
+      neighborLevel = arg.level
     }
-    const { predecessor, instruction } = trace
-    this._stacker.position = predecessor
-    return ReverseInstruction[instruction]
+    return Math.abs(this._stacker.cell?.level ?? 0 - neighborLevel) <= 1
   }
 }

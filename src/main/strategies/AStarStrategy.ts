@@ -32,14 +32,14 @@ export class AStarStrategy extends PathfindingStrategy implements IPathfindingSt
        */
       if (Coordinates.isEqual(this._start, this._target)) {
         this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
-        return this._stacker.unload()
+        return this._stacker.doNothing()
       }
       /**
        * 2) Arrived at target. Load block.
        */
       if (Coordinates.isEqual(this._stacker.position, this._target)) {
         console.log(
-          'A* Pathfinder - ',
+          'AStar Pathfinder - ',
           'Target block found:',
           this._target,
           'fScore',
@@ -80,7 +80,7 @@ export class AStarStrategy extends PathfindingStrategy implements IPathfindingSt
           return instruction
         }
         throw new Error(
-          `A* failed (empty open set) - 
+          `AStar failed (empty open set) - 
             start: ${Coordinates.serialize(this._start)}, 
             target: ${Coordinates.serialize(this._target)}`
         )
@@ -96,7 +96,7 @@ export class AStarStrategy extends PathfindingStrategy implements IPathfindingSt
        * 4) Returned to start. Switch to stair-building strategy.
        */
       this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
-      return this._stacker.doNothing()
+      return this._stacker.unload()
     }
   }
 }

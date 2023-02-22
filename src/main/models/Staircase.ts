@@ -3,31 +3,30 @@ import { Coordinates } from '../utils'
 import { Stacker } from './'
 
 export class Staircase {
+  private readonly stacker: Stacker
   public readonly top: Coordinate
   public bottom: Coordinate
-  public topLevel = 1
-  public bottomLevel: number
-  public readonly ascendingPath: Move[] = []
   public stairs = new Set<SerializedCoordinate>()
-  public targetLevel = 0
+  public readonly ascendingPath: Move[] = []
+  public topLevel = 2
+  public targetLevel = 1
   public currentLevel = 0
   public descendFlag = false
+  public extendedFlag = false
   public buildFlag = false
 
   constructor(stacker: Stacker) {
-    const [coordinate, level] = [stacker.position, stacker.cell?.level ?? 0]
-    this.top = coordinate
-    this.bottom = coordinate
-    this.topLevel = level
-    this.bottomLevel = level
+    this.stacker = stacker
+    this.top = stacker.position
+    this.bottom = this.top
     this.stairs.add(Coordinates.serialize(this.top))
   }
 
   public extend(move: Move): void {
     const { successor, instruction } = move
-    console.log('Staircase - new bottom step:', successor)
+    this.extendedFlag = true
     this.bottom = successor
     this.stairs.add(Coordinates.serialize(successor))
-    this.ascendingPath.unshift({ successor, instruction: ReverseInstruction[instruction] })
+    this.ascendingPath.unshift({ successor: this.stacker.position, instruction: ReverseInstruction[instruction] })
   }
 }

@@ -1,6 +1,6 @@
 import { IPathfindingStrategy } from '../interfaces'
 import { Stacker } from '../models'
-import { Instruction, Move, SerializedCoordinate } from '../types'
+import { GameState, Instruction, Move, SerializedCoordinate } from '../types'
 import { Coordinates } from '../utils'
 import { PathfindingStrategy } from './PathfindingStrategy'
 
@@ -16,7 +16,7 @@ export class BacktrackingStrategy extends PathfindingStrategy implements IPathfi
      * 4) Found goal node. Correct for overshoot by backtracking one step.
      */
     if (this._grid.isGoalFound) {
-      this._stacker.switchGameState()
+      this._stacker.switchGameState(GameState.RETRIEVE_BLOCK)
       return this.prev()
     }
     const currentPosition = Coordinates.serialize(this._stacker.position)
