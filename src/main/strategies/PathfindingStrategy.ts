@@ -1,17 +1,30 @@
 import { Grid, Stacker } from '../models'
-import { Cell, CellType, GameState, Move, NEIGHBORS, ReverseInstruction, SerializedCoordinate, Trace } from '../types'
+import {
+  Cell,
+  CellType,
+  GameState,
+  Instruction,
+  Move,
+  NEIGHBORS,
+  ReverseInstruction,
+  SerializedCoordinate,
+  Trace,
+} from '../types'
 import { Coordinates } from '../utils'
 
 export abstract class PathfindingStrategy {
   protected readonly _stacker: Stacker
   protected readonly _grid: Grid
   protected readonly _visited = new Set<SerializedCoordinate>()
-  protected readonly _pathStack: Trace[] = []
+  protected readonly _pathStack: Trace[]
 
   constructor(stacker: Stacker) {
     this._stacker = stacker
     this._grid = this._stacker.grid
+    this._pathStack = []
   }
+
+  public abstract next(): Instruction
 
   protected prev() {
     const trace = this._pathStack.pop()
@@ -25,23 +38,19 @@ export abstract class PathfindingStrategy {
   }
 
   /**
-   * Scans four-directional neighbor nodes and updates `Grid.gridMap` `Grid.closestBlocks`.
+   * Scans four-directional neighbor nodes and updates `Grid.gridMap` `Grid.closestBlocksPQ`.
    *
-   * Initializes `Grid.isGoalFound`, `Grid.goal`, `Grid.goalLevel`, `Grid.closestBlocks`, `Staircase`.
+   * Initializes `Grid.isGoalFound`, `Grid.goal`, `Grid.goalLevel`, `Grid.closestBlocksPQ`, `Staircase`.
    *
    * @returns Collection of `Moves` to traversable successor nodes.
    */
-  protected expand({
-    excludeVisited,
-    updateBlocks,
-    maxLevel,
-    checkTraversability,
-  }: {
+  protected expand(options?: {
     excludeVisited?: boolean
-    updateBlocks?: boolean
+    updateClosestBlocks?: boolean
     maxLevel?: number
     checkTraversability?: boolean
   }) {
+    const { excludeVisited, updateClosestBlocks, maxLevel, checkTraversability } = options ?? {}
     const validMoves: Move[] = []
     for (const neighbor of NEIGHBORS) {
       const { type, level } = this._stacker.cell?.[neighbor] ?? {
@@ -70,7 +79,13 @@ export abstract class PathfindingStrategy {
               successor: neighborCoordinate,
               instruction: neighbor,
             })
-            if (updateBlocks !== false) {
+          }
+          if (level >= 1) {
+            if (
+              updateClosestBlocks !== false &&
+              (this._grid.staircase === undefined ||
+                !this._grid.staircase.stairs.has(Coordinates.serialize(neighborCoordinate)))
+            ) {
               this._grid.updateClosestBlocks(neighborCoordinate)
             }
           }

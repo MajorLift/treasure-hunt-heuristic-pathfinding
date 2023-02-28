@@ -11,12 +11,17 @@ export class BacktrackingStrategy extends PathfindingStrategy implements IPathfi
     super(stacker)
   }
 
-  public next(): Instruction {
+  next(): Instruction {
     /**
      * 4) Found goal node. Correct for overshoot by backtracking one step.
      */
-    if (this._grid.isGoalFound) {
-      this._stacker.switchGameState(GameState.RETRIEVE_BLOCK)
+    if (this._grid.isGoalFound && this._grid.staircase !== undefined) {
+      if (this._grid.staircase.topLevel > 0) {
+        this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
+      } else {
+        this._stacker.switchGameState(GameState.RETRIEVE_BLOCK)
+        this._grid.staircase.topLevel = 1
+      }
       return this.prev()
     }
     const currentPosition = Coordinates.serialize(this._stacker.position)
@@ -24,7 +29,7 @@ export class BacktrackingStrategy extends PathfindingStrategy implements IPathfi
      * 1) If current node is unvisited, get neighbor node info and store in successors map.
      */
     if (!this._successors.has(currentPosition)) {
-      this._successors.set(currentPosition, this.expand({ updateBlocks: false }))
+      this._successors.set(currentPosition, this.expand({ updateClosestBlocks: false }))
     }
     const currentSuccessors = this._successors.get(currentPosition) ?? []
     const { successor, instruction } = currentSuccessors.pop() ?? {}

@@ -10,30 +10,26 @@ export class AStarStrategy extends PathfindingStrategy implements IPathfindingSt
   private _start: Coordinate
   private _target: Coordinate
   private _isTargetReached = false
-  private readonly _gScore = new Map<SerializedCoordinate, number>()
-  private readonly _fScore = new Map<SerializedCoordinate, number>()
-  private readonly _openSet = new MinPriorityQueue<{
+  private readonly _gScore: Map<SerializedCoordinate, number>
+  private readonly _fScore: Map<SerializedCoordinate, number>
+  private readonly _openSet: MinPriorityQueue<{
     fScore: number
     move: Move
-  }>((node) => node.fScore)
+  }>
 
   constructor(stacker: Stacker, target: Coordinate) {
     super(stacker)
     this._start = this._stacker.position
     this._target = target
+    this._gScore = new Map()
     this._gScore.set(Coordinates.serialize(this._start), 0)
+    this._fScore = new Map()
     this._fScore.set(Coordinates.serialize(this._start), Coordinates.manhattanDistance(this._start, this._target))
+    this._openSet = new MinPriorityQueue((node) => node.fScore)
   }
 
-  public next() {
+  next() {
     if (!this._isTargetReached) {
-      /**
-       * 0) Start cell already has a block.
-       */
-      if (Coordinates.isEqual(this._start, this._target)) {
-        this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
-        return this._stacker.doNothing()
-      }
       /**
        * 2) Arrived at target. Load block.
        */
@@ -87,16 +83,16 @@ export class AStarStrategy extends PathfindingStrategy implements IPathfindingSt
       }
     } else {
       /**
-       * 3) Retrace steps from target back to start.
-       */
-      if (!Coordinates.isEqual(this._stacker.position, this._start)) {
-        return this.prev()
-      }
-      /**
        * 4) Returned to start. Switch to stair-building strategy.
        */
-      this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
-      return this._stacker.unload()
+      if (Coordinates.isEqual(this._stacker.position, this._start)) {
+        this._stacker.switchGameState(GameState.BUILD_STAIRCASE)
+        return this._stacker.unload()
+      }
+      /**
+       * 3) Retrace steps from target back to start.
+       */
+      return this.prev()
     }
   }
 }

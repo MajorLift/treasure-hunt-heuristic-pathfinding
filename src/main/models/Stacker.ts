@@ -1,19 +1,25 @@
 import '../../../static/minitroll.png'
 
 import { IPathfindingStrategy, IStacker } from '../interfaces'
-import { AStarStrategy, BacktrackingStrategy } from '../strategies'
+import { Grid } from '../models'
+import { AStarStrategy, BacktrackingStrategy, StairbuildingStrategy } from '../strategies'
 import { Coordinate, CurrentCell, GameState, Instruction } from '../types'
 import { Coordinates } from '../utils'
-import { Grid } from './'
 
 export class Stacker implements IStacker {
-  private readonly _grid: Grid = new Grid()
-  private _position: Coordinate = [0, 0]
+  private readonly _grid: Grid
+  private _position: Coordinate
   private _cell?: CurrentCell
-  private _isLoaded = false
+  private _isLoaded
   private _gameState: GameState = GameState.FIND_GOAL
   private _strategy?: IPathfindingStrategy | null
-  private _turnCount = 1
+  private _turnCount = 0
+
+  constructor() {
+    this._grid = new Grid()
+    this._position = [0, 0]
+    this._isLoaded = false
+  }
 
   get grid() {
     return this._grid
@@ -35,8 +41,8 @@ export class Stacker implements IStacker {
   }
 
   public turn(currentCell: CurrentCell) {
-    console.log('Turn:', this._turnCount++, this._position, this._cell, this._strategy)
     this._cell = currentCell
+    console.log('Turn:', this._turnCount++, this._position, this._cell)
     if (!this._strategy) {
       let nextTargetBlock
       switch (this._gameState) {
@@ -44,15 +50,15 @@ export class Stacker implements IStacker {
           this.activateStrategy(new BacktrackingStrategy(this))
           break
         case GameState.RETRIEVE_BLOCK:
-          nextTargetBlock = this._grid.closestBlocks?.pop()
+          nextTargetBlock = this._grid.closestBlocksPQ?.dequeue()
           /**
-           * TODO: FIX (edge case) - If game starts at a cell neighboring the goal node, `Grid.closestBlocks` never gets populated.
+           * TODO: FIX (edge case) - If game starts at a cell neighboring the goal node, `Grid.gridMap`, and by extension `Grid.closestBlocksPQ`, never get populated.
            */
           if (!nextTargetBlock) throw new Error('Out of blocks to retrieve.')
           this.activateStrategy(new AStarStrategy(this, nextTargetBlock))
           break
         case GameState.BUILD_STAIRCASE:
-          // this.activateStrategy(new StairbuildingStrategy(this))
+          this.activateStrategy(new StairbuildingStrategy(this))
           break
         case GameState.END:
           if (Coordinates.isEqual(this._position, this._grid.goal ?? [NaN, NaN])) {
@@ -108,5 +114,5 @@ export class Stacker implements IStacker {
   }
 }
 
-// @ts-expect-error - grants Stacker module access to `challenge.js`.
+// @ts-expect-error - grants `challenge.js` access to Stacker module.
 globalThis.Stacker = Stacker

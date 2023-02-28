@@ -5,12 +5,12 @@ import { Stacker } from './'
 export class Staircase {
   private readonly stacker: Stacker
   public readonly top: Coordinate
+  public topLevel: number
   public bottom: Coordinate
-  public stairs = new Set<SerializedCoordinate>()
-  public readonly ascendingPath: Move[] = []
-  public topLevel = 2
-  public targetLevel = 1
-  public currentLevel = 0
+  public stairs: Set<SerializedCoordinate>
+  public readonly ascendingPath: Move[]
+  public targetLevel = 2
+  public currentStep = 1
   public descendFlag = false
   public extendedFlag = false
   public buildFlag = false
@@ -18,15 +18,21 @@ export class Staircase {
   constructor(stacker: Stacker) {
     this.stacker = stacker
     this.top = stacker.position
+    this.topLevel = stacker.cell?.level ?? 0
     this.bottom = this.top
+    this.stairs = new Set()
     this.stairs.add(Coordinates.serialize(this.top))
+    this.ascendingPath = []
   }
 
   public extend(move: Move) {
     const { successor, instruction } = move
-    this.extendedFlag = true
     this.bottom = successor
     this.stairs.add(Coordinates.serialize(successor))
-    this.ascendingPath.unshift({ successor: this.stacker.position, instruction: ReverseInstruction[instruction] })
+    this.ascendingPath.unshift({
+      successor: this.stacker.position,
+      instruction: ReverseInstruction[instruction],
+    })
+    console.log('Staircase - New bottom step found', successor, this.ascendingPath)
   }
 }
