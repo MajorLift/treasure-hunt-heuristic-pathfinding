@@ -66,3 +66,8 @@ enum Instruction {
 The simulator will only count a turn if the action you specified was legal. So if you try to pickup a non-existent block, it simply won't do anything.
 
 You can begin writing your solution in [solution.ts](./src/solution.ts)
+
+# Citation
+
+Original version: 
+https://github.com/mjhea0/troll-challenge
