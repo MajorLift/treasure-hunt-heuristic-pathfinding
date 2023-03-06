@@ -1,10 +1,15 @@
-import '../../../static/minitroll.png'
+import 'static/minitroll.png'
+
+import $ from 'jquery'
 
 import { IPathfindingStrategy, IStacker } from '../interfaces'
 import { Grid } from '../models'
-import { AStarStrategy, BacktrackingStrategy, StairbuildingStrategy } from '../strategies'
+import { AStarStrategy, BacktrackingStrategy } from '../strategies'
 import { Coordinate, CurrentCell, GameState, Instruction } from '../types'
 import { Coordinates } from '../utils'
+
+window.jQuery = $
+window.$ = $
 
 export class Stacker implements IStacker {
   private readonly _grid: Grid
@@ -58,7 +63,7 @@ export class Stacker implements IStacker {
           this.activateStrategy(new AStarStrategy(this, nextTargetBlock))
           break
         case GameState.BUILD_STAIRCASE:
-          this.activateStrategy(new StairbuildingStrategy(this))
+          // this.activateStrategy(new StairbuildingStrategy(this))
           break
         case GameState.END:
           if (Coordinates.isEqual(this._position, this._grid.goal ?? [NaN, NaN])) {

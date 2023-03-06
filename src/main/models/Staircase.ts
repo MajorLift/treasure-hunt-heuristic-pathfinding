@@ -9,6 +9,7 @@ export class Staircase {
   public bottom: Coordinate
   public stairs: Set<SerializedCoordinate>
   public readonly ascendingPath: Move[]
+  public readonly descendingPath: Move[]
   public targetLevel = 2
   public currentStep = 1
   public descendFlag = false
@@ -23,12 +24,17 @@ export class Staircase {
     this.stairs = new Set()
     this.stairs.add(Coordinates.serialize(this.top))
     this.ascendingPath = []
+    this.descendingPath = []
   }
 
   public extend(move: Move) {
     const { successor, instruction } = move
     this.bottom = successor
     this.stairs.add(Coordinates.serialize(successor))
+    this.descendingPath.push({
+      successor,
+      instruction,
+    })
     this.ascendingPath.unshift({
       successor: this.stacker.position,
       instruction: ReverseInstruction[instruction],
